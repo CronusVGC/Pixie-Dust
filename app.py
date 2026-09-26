@@ -1,26 +1,26 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# 1. Expand the workspace area and hide padding
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Add custom CSS to minimize default Streamlit padding
+# Minimize Streamlit container padding
 st.markdown("""
     <style>
-           .block-container {
-                padding-top: 1rem;
-                padding-bottom: 1rem;
-                padding-left: 2rem;
-                padding-right: 2rem;
-            }
+        .block-container {
+            padding-top: 0rem;
+            padding-bottom: 0rem;
+            padding-left: 0rem;
+            padding-right: 0rem;
+        }
+        iframe {
+            width: 100%;
+        }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Read and render Final.html
+# Read the HTML content
 with open("Final.html", "r", encoding="utf-8") as f:
     html_content = f.read()
 
-# 4. Use scrolling=True. We remove the fixed 'height' 
-# to allow the component to define its own space, 
-# letting Streamlit handle the scrolling behavior.
-components.html(html_content, scrolling=True, height=None)
+# Pass an explicit height in pixels
+components.html(html_content, height=1200, scrolling=True)
