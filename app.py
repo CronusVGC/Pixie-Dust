@@ -1,36 +1,48 @@
+import base64
 from pathlib import Path
 import streamlit as st
 
-# 1. Expand layout and collapse sidebar by default
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="Pixie Dust",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-# 2. Inject CSS to hide Streamlit's top header, footer, and container margins
+# Inject custom CSS to remove Streamlit container padding & scrollbars
 st.markdown(
     """
     <style>
-        /* Hide top header bar and footer */
-        header[data-testid="stHeader"] { visibility: hidden; height: 0rem; }
-        footer { visibility: hidden; height: 0rem; }
-        
-        /* Eliminate top padding so content touches the top border */
-        .main .block-container {
-            padding-top: 0rem !important;
-            padding-bottom: 0rem !important;
-            padding-left: 0rem !important;
-            padding-right: 0rem !important;
+        #root > div:nth-child(1) > div > div > div > div {
+            padding: 0rem !important;
+        }
+        header[data-testid="stHeader"] {
+            display: none !important;
+        }
+        footer {
+            display: none !important;
+        }
+        .block-container {
+            padding: 0rem !important;
             max-width: 100% !important;
         }
-
-        /* Set the iframe wrapper to take full screen height */
-        div[data-testid="stIframe"] > iframe {
-            height: 98vh !important;
-            width: 100% !important;
-            border: none;
+        iframe {
+            width: 100vw !important;
+            height: 100vh !important;
+            border: none !important;
         }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# 3. Use st.iframe to render the local HTML file dynamically
-st.iframe(Path("Final.html"), height="stretch")
+# Load HTML and convert to Base64 Data URI for st.iframe
+html_path = Path(__file__).parent / "Final.html"
+if html_path.exists():
+    html_bytes = html_path.read_bytes()
+    encoded_html = base64.b64encode(html_bytes).decode("utf-8")
+    data_uri = f"data:text/html;base64,{encoded_html}"
+
+    # Pass data URI directly into st.iframe
+    st.iframe(data_uri)
+else:
+    st.error("Final.html file not found in the root directory.")
