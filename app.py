@@ -1,26 +1,36 @@
+from pathlib import Path
 import streamlit as st
-import streamlit.components.v1 as components
 
+# 1. Expand layout and collapse sidebar by default
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
-# Minimize Streamlit container padding
-st.markdown("""
+# 2. Inject CSS to hide Streamlit's top header, footer, and container margins
+st.markdown(
+    """
     <style>
-        .block-container {
-            padding-top: 0rem;
-            padding-bottom: 0rem;
-            padding-left: 0rem;
-            padding-right: 0rem;
+        /* Hide top header bar and footer */
+        header[data-testid="stHeader"] { visibility: hidden; height: 0rem; }
+        footer { visibility: hidden; height: 0rem; }
+        
+        /* Eliminate top padding so content touches the top border */
+        .main .block-container {
+            padding-top: 0rem !important;
+            padding-bottom: 0rem !important;
+            padding-left: 0rem !important;
+            padding-right: 0rem !important;
+            max-width: 100% !important;
         }
-        iframe {
-            width: 100%;
+
+        /* Set the iframe wrapper to take full screen height */
+        div[data-testid="stIframe"] > iframe {
+            height: 98vh !important;
+            width: 100% !important;
+            border: none;
         }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
-# Read the HTML content
-with open("Final.html", "r", encoding="utf-8") as f:
-    html_content = f.read()
-
-# Pass an explicit height in pixels
-components.html(html_content, height=1200, scrolling=True)
+# 3. Use st.iframe to render the local HTML file dynamically
+st.iframe(Path("Final.html"), height="stretch")
