@@ -1,6 +1,6 @@
-import base64
 from pathlib import Path
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Pixie Dust",
@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Inject custom CSS to remove Streamlit container padding & scrollbars
+# Inject custom CSS to remove Streamlit padding, header, footer & scrollbars
 st.markdown(
     """
     <style>
@@ -29,20 +29,19 @@ st.markdown(
             width: 100vw !important;
             height: 100vh !important;
             border: none !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
         }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Load index.html and convert to Base64 Data URI for st.iframe
+# Load index.html directly into Streamlit HTML Component
 html_path = Path(__file__).parent / "index.html"
 if html_path.exists():
-    html_bytes = html_path.read_bytes()
-    encoded_html = base64.b64encode(html_bytes).decode("utf-8")
-    data_uri = f"data:text/html;base64,{encoded_html}"
-
-    # Pass data URI directly into st.iframe
-    st.iframe(data_uri)
+    html_content = html_path.read_text(encoding="utf-8")
+    components.html(html_content, height=1000, scrolling=False)
 else:
     st.error("index.html file not found in the root directory.")
