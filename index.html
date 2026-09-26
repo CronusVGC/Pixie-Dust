@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIXIE DUST — Private media. Before it leaves your device.</title>
+  <meta name="description" content="Client-side pixel scrambling and access gating. Protect your private photos locally before uploading to public clouds or messaging networks." />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Modular Styles -->
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/components.css" />
+  <link rel="stylesheet" href="styles/responsive.css" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              bg: '#030712',
+              card: '#0B1120',
+              border: '#1E293B',
+              cyan: '#06B6D4',
+              emerald: '#10B981',
+              rose: '#F43F5E',
+              amber: '#F59E0B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between cyber-grid relative">
+  <!-- Ambient background glow elements -->
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between nav-bar-container">
+      
+      <!-- Brand Logo & Motto -->
+      <div class="flex items-center space-x-3 cursor-pointer" id="navBrand">
+        <div class="p-2 bg-gradient-to-tr from-cyan-500 to-emerald-500 rounded-xl shadow-lg shadow-cyan-500/20 text-slate-950">
+          <i data-lucide="shield-check" class="w-6 h-6 stroke-[2.5]"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+              PIXIE DUST
+            </h1>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">
+              BUILD FOR BILLIONS
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 font-mono flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            Private media. Before it leaves your device.
+          </p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 nav-tabs-wrapper">
+        <button id="tabNavHome" class="nav-tab active" data-target="sectionHome">
+          <i data-lucide="home" class="w-4 h-4"></i>
+          <span>Home</span>
+        </button>
+        <button id="tabNavSend" class="nav-tab" data-target="sectionSend">
+          <i data-lucide="lock" class="w-4 h-4"></i>
+          <span>Send Privately</span>
+        </button>
+        <button id="tabNavReceive" class="nav-tab" data-target="sectionReceive">
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span>Receive Privately</span>
+        </button>
+        <button id="tabNavVault" class="nav-tab" data-target="sectionVault">
+          <i data-lucide="folder-lock" class="w-4 h-4"></i>
+          <span>Protected Vault</span>
+          <span id="vaultBadgeCount" class="text-[10px] bg-slate-800 px-1.5 py-0.2 rounded-full font-mono">0</span>
+        </button>
+        <button id="tabNavSecurity" class="nav-tab" data-target="sectionSecurity">
+          <i data-lucide="cpu" class="w-4 h-4"></i>
+          <span>Security Center</span>
+        </button>
+      </nav>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center space-x-2">
+        <button id="quickDemoBtn" class="px-3 py-1.5 text-xs font-semibold text-slate-950 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 rounded-lg shadow-md shadow-amber-500/20 transition-all flex items-center gap-1.5 active:scale-95">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Judge Demo Payload</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+    
+    <!-- ========================================== -->
+    <!-- SECTION 1: HOME / LANDING -->
+    <!-- ========================================== -->
+    <section id="sectionHome" class="app-section active space-y-12">
+      <!-- Hero Banner -->
+      <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-slate-800 relative overflow-hidden text-center sm:text-left">
+        <div class="max-w-3xl space-y-6">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-800 text-xs font-mono text-cyan-300">
+            <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+            <span>Privacy for Billions Track • Zero Server Transmission</span>
+          </div>
+
+          <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-100 leading-tight">
+            Private media. <br />
+            <span class="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+              Before it leaves your device.
+            </span>
+          </h2>
+
+          <p class="text-base sm:text-lg text-slate-300 leading-relaxed">
+            Pixie Dust scrambles image pixel coordinates with <strong>Fisher-Yates permutation</strong> and masks color channels with <strong>keystream diffusion</strong> in memory before transit. Only someone with your exact passphrase can un-scramble the image.
+          </p>
+
+          <!-- Quick Action CTAs -->
+          <div class="flex flex-wrap items-center gap-4 pt-2 justify-center sm:justify-start">
+            <button id="homeStartProtectBtn" class="px-6 py-3.5 text-sm font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center gap-2 font-mono">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+              <span>PROTECT AN IMAGE NOW</span>
+            </button>
+            <button id="homeStartRestoreBtn" class="px-6 py-3.5 text-sm font-semibold text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl transition-all flex items-center gap-2 font-mono">
+              <i data-lucide="unlock" class="w-4 h-4 text-emerald-400"></i>
+              <span>RESTORE PROTECTED IMAGE</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+          <div class="space-y-1">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-slate-400">Key Derivation</h4>
+            <p class="text-sm font-bold text-slate-200">PBKDF2-HMAC-SHA256</p>
+            <p class="text-xs text-slate-500">100,000 rounds mitigate dictionary attacks.</p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-slate-400">Visual Obscuration</h4>
+            <p class="text-sm font-bold text-slate-200">Permutation + Keystream XOR</p>
+            <p class="text-xs text-slate-500">Pixel coordinates and color channels are scrambled.</p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-slate-400">Pixel Fidelity</h4>
+            <p class="text-sm font-bold text-slate-200">100% Lossless Restoration</p>
+            <p class="text-xs text-slate-500">Original LSBs preserved for zero bit drift.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Judging Demo Walkthrough Card -->
+      <div class="glass-panel p-6 rounded-2xl border border-amber-500/30 bg-amber-950/10 space-y-4">
+        <div class="flex items-center gap-2 text-amber-400 font-mono text-sm font-bold">
+          <i data-lucide="compass" class="w-4 h-4"></i>
+          <span>JUDGE DEMO FLOW (UNDER 2 MINUTES)</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs font-mono">
+          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-cyan-400 font-bold">STEP 1</span>
+            <p class="text-slate-200">Click <strong>Judge Demo Payload</strong> or select an image.</p>
+          </div>
+          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-cyan-400 font-bold">STEP 2</span>
+            <p class="text-slate-200">Enter passphrase and click <strong>Protect Image</strong>.</p>
+          </div>
+          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-cyan-400 font-bold">STEP 3</span>
+            <p class="text-slate-200">Switch to <strong>Receive</strong> and test with wrong password → <strong>ACCESS DENIED</strong>.</p>
+          </div>
+          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-emerald-400 font-bold">STEP 4</span>
+            <p class="text-slate-200">Enter correct password → <strong>IMAGE RESTORED</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: SEND PRIVATELY (PROTECT FLOW) -->
+    <!-- ========================================== -->
+    <section id="sectionSend" class="app-section space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Controls Column -->
+        <div class="lg:col-span-5 glass-panel rounded-2xl p-6 shadow-xl space-y-6 border border-slate-800">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div class="flex items-center space-x-2">
+              <i data-lucide="lock" class="w-4 h-4 text-cyan-400"></i>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-200 font-mono">
+                Protect Image Pipeline
+              </h3>
+            </div>
+            <span class="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800">
+              CLIENT-SIDE
+            </span>
+          </div>
+
+          <!-- Dropzone -->
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
+              Target Image File
+            </label>
+            <div 
+              id="sendDropZone" 
+              class="border-2 border-dashed border-slate-700 hover:border-cyan-500/60 bg-slate-900/40 hover:bg-slate-900/80 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 relative group"
+            >
+              <input type="file" id="sendFileInput" accept="image/png, image/jpeg, image/webp" class="hidden" />
+              
+              <div id="sendUploadPlaceholder" class="space-y-3">
+                <div class="w-12 h-12 mx-auto rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:border-cyan-500 transition-all">
+                  <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-200">
+                    <span class="text-cyan-400 underline underline-offset-2">Click to browse</span> or drag image here
+                  </p>
+                  <p class="text-xs text-slate-500 mt-1 font-mono">PNG, JPG, WEBP formats supported</p>
+                </div>
+              </div>
+
+              <!-- Upload File Summary -->
+              <div id="sendFileInfo" class="hidden flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800 text-left">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                  <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-cyan-400 flex-shrink-0">
+                    <i data-lucide="image" class="w-5 h-5"></i>
+                  </div>
+                  <div class="truncate">
+                    <p id="sendFileName" class="text-xs font-semibold text-slate-200 truncate">image.png</p>
+                    <p id="sendFileMeta" class="text-[11px] text-slate-400 font-mono">0 KB • 0x0 px</p>
+                  </div>
+                </div>
+                <button id="sendRemoveFileBtn" type="button" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition-colors">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Passphrase Input -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="sendPasswordInput" class="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
+                Encryption Passphrase
+              </label>
+              <div class="flex items-center gap-2">
+                <button id="sendGenPassBtn" type="button" class="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1">
+                  <i data-lucide="sparkles" class="w-3 h-3"></i>
+                  Generate
+                </button>
+              </div>
+            </div>
+
+            <div class="relative">
+              <input 
+                type="password" 
+                id="sendPasswordInput" 
+                placeholder="Enter passphrase (or click Generate)" 
+                class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 pr-11 text-sm font-mono text-slate-100 placeholder-slate-500 outline-none transition-all shadow-inner" 
+              />
+              <button id="sendTogglePassBtn" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1">
+                <i data-lucide="eye" id="sendEyeIcon" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Entropy Strength Indicator -->
+            <div class="space-y-1 pt-1">
+              <div class="flex justify-between items-center text-xs font-mono">
+                <span class="text-slate-500">Key Entropy:</span>
+                <span id="sendStrengthLabel" class="text-slate-400 font-medium">Empty</span>
+              </div>
+              <div class="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                <div id="sendStrengthBar" class="h-full w-0 bg-slate-600 rounded-full transition-all duration-300"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <div class="pt-2 space-y-3">
+            <button 
+              id="sendProcessBtn" 
+              disabled 
+              class="w-full py-3.5 px-6 rounded-xl font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-mono"
+            >
+              <i data-lucide="cpu" class="w-4 h-4"></i>
+              <span id="sendProcessBtnText">PROTECT IMAGE</span>
+            </button>
+          </div>
+
+          <!-- Progress Bar & Status -->
+          <div class="space-y-1 font-mono">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span id="sendProgressStepText">Status: Awaiting Image & Key</span>
+              <span id="sendProgressPercent" class="text-cyan-400 font-bold">0%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-0.5">
+              <div id="sendProgressBar" class="h-full w-0 bg-gradient-to-r from-cyan-500 to-emerald-400 rounded-full transition-all duration-150"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Visual Inspection Viewport Column -->
+        <div class="lg:col-span-7 flex flex-col space-y-6">
+          <div class="glass-panel rounded-2xl p-6 shadow-xl border border-slate-800 flex-1 flex flex-col justify-between space-y-6">
+            
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 font-mono">
+                  Visual Viewport
+                </h3>
+              </div>
+              
+              <button id="sendToggleViewBtn" class="px-2.5 py-1 text-xs font-mono bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg flex items-center gap-1.5 transition-colors">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span id="sendToggleViewText">View Output Only</span>
+              </button>
+            </div>
+
+            <!-- Canvases Grid -->
+            <div id="sendCanvasGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 items-center">
+              
+              <!-- Source Canvas Box -->
+              <div id="sendInputBox" class="space-y-2 flex flex-col items-center">
+                <div class="w-full flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+                  <span class="flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-slate-500"></span> Source Original
+                  </span>
+                  <span id="sendInputDim" class="text-[11px] text-slate-500">0 x 0</span>
+                </div>
+                <div class="w-full h-64 sm:h-72 canvas-checkerboard rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center relative">
+                  <canvas id="sendInputCanvas" class="max-w-full max-h-full object-contain"></canvas>
+                  <div id="sendInputOverlay" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 font-mono bg-slate-950/70">
+                    No Source Loaded
+                  </div>
+                </div>
+              </div>
+
+              <!-- Protected Canvas Box -->
+              <div id="sendOutputBox" class="space-y-2 flex flex-col items-center">
+                <div class="w-full flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+                  <span class="flex items-center gap-1">
+                    <span id="sendOutputDot" class="w-2 h-2 rounded-full bg-cyan-500"></span> Scrambled / Protected
+                  </span>
+                  <span id="sendOutputDim" class="text-[11px] text-slate-500">0 x 0</span>
+                </div>
+                <div class="w-full h-64 sm:h-72 canvas-checkerboard rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center relative">
+                  <canvas id="sendOutputCanvas" class="max-w-full max-h-full object-contain"></canvas>
+                  <div id="sendOutputOverlay" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 font-mono bg-slate-950/70">
+                    Awaiting Encryption
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Download & Export Action Bar -->
+            <div class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
+              <div class="text-xs font-mono text-slate-400 flex items-center gap-2">
+                <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+                <span>Computation: <strong id="sendTimeStat" class="text-slate-200">0 ms</strong></span>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <!-- Jump directly to Receive with this image -->
+                <button 
+                  id="sendToReceiveBtn" 
+                  disabled 
+                  class="px-3 py-2 text-xs font-mono font-semibold text-cyan-300 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-800 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
+                  title="Test decryption immediately in Receive tab"
+                >
+                  <i data-lucide="arrow-right-left" class="w-3.5 h-3.5"></i>
+                  <span>Test in Receive</span>
+                </button>
+
+                <!-- Download Button -->
+                <button 
+                  id="sendDownloadBtn" 
+                  disabled 
+                  class="px-4 py-2 text-xs font-mono font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Download (.png)</span>
+                </button>
+
+                <!-- Share Link Placeholder -->
+                <button 
+                  id="sendShareBtn" 
+                  disabled 
+                  class="px-3 py-2 text-xs font-mono text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
+                >
+                  <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                  <span>Share</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Terminal Output -->
+          <div class="glass-panel rounded-2xl p-4 shadow-xl border border-slate-800 space-y-2 font-mono">
+            <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-2">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="terminal" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Cryptographic Execution Log</span>
+              </span>
+              <span class="text-[10px] text-slate-500">In-Memory Audit</span>
+            </div>
+            <div id="sendTerminalLog" class="h-24 bg-slate-950/90 rounded-xl border border-slate-900 p-3 text-[11px] text-slate-400 overflow-y-auto space-y-1">
+              <div class="text-cyan-500/80">[SYSTEM] Send Engine initialized. Load an image and key to begin.</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 3: RECEIVE PRIVATELY (RESTORE FLOW) -->
+    <!-- ========================================== -->
+    <section id="sectionReceive" class="app-section space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Controls Column -->
+        <div class="lg:col-span-5 glass-panel rounded-2xl p-6 shadow-xl space-y-6 border border-slate-800">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div class="flex items-center space-x-2">
+              <i data-lucide="unlock" class="w-4 h-4 text-emerald-400"></i>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-200 font-mono">
+                Restore Image Pipeline
+              </h3>
+            </div>
+            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+              AUTHENTICATED
+            </span>
+          </div>
+
+          <!-- Dropzone for Protected File -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
+                Protected Image File (.PNG)
+              </label>
+              <button id="recvLoadLastBtn" type="button" class="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1">
+                <i data-lucide="history" class="w-3 h-3"></i>
+                Load Last Protected
+              </button>
+            </div>
+
+            <div 
+              id="recvDropZone" 
+              class="border-2 border-dashed border-slate-700 hover:border-emerald-500/60 bg-slate-900/40 hover:bg-slate-900/80 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 relative group"
+            >
+              <input type="file" id="recvFileInput" accept="image/png" class="hidden" />
+              
+              <div id="recvUploadPlaceholder" class="space-y-3">
+                <div class="w-12 h-12 mx-auto rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:border-emerald-500 transition-all">
+                  <i data-lucide="shield" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-200">
+                    <span class="text-emerald-400 underline underline-offset-2">Select protected file</span> or drop here
+                  </p>
+                  <p class="text-xs text-slate-500 mt-1 font-mono">Must be a lossless PNG image</p>
+                </div>
+              </div>
+
+              <!-- Upload File Summary -->
+              <div id="recvFileInfo" class="hidden flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800 text-left">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                  <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                    <i data-lucide="image" class="w-5 h-5"></i>
+                  </div>
+                  <div class="truncate">
+                    <p id="recvFileName" class="text-xs font-semibold text-slate-200 truncate">protected.png</p>
+                    <p id="recvFileMeta" class="text-[11px] text-slate-400 font-mono">0 KB • 0x0 px</p>
+                  </div>
+                </div>
+                <button id="recvRemoveFileBtn" type="button" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition-colors">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Passphrase Input -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="recvPasswordInput" class="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
+                Decryption Passphrase
+              </label>
+              <!-- Shortcut to test WRONG password for judging demo -->
+              <button id="recvTestWrongPassBtn" type="button" class="text-xs text-rose-400 hover:text-rose-300 font-mono flex items-center gap-1 font-semibold">
+                <i data-lucide="alert-octagon" class="w-3 h-3"></i>
+                Test Wrong Pass
+              </button>
+            </div>
+
+            <div class="relative">
+              <input 
+                type="password" 
+                id="recvPasswordInput" 
+                placeholder="Enter passphrase used to protect this image" 
+                class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-4 py-3 pr-11 text-sm font-mono text-slate-100 placeholder-slate-500 outline-none transition-all shadow-inner" 
+              />
+              <button id="recvTogglePassBtn" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1">
+                <i data-lucide="eye" id="recvEyeIcon" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <div class="pt-2 space-y-3">
+            <button 
+              id="recvProcessBtn" 
+              disabled 
+              class="w-full py-3.5 px-6 rounded-xl font-semibold text-slate-950 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-mono"
+            >
+              <i data-lucide="key" class="w-4 h-4"></i>
+              <span id="recvProcessBtnText">AUTHENTICATE & RESTORE</span>
+            </button>
+          </div>
+
+          <!-- Progress Bar & Status -->
+          <div class="space-y-1 font-mono">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span id="recvProgressStepText">Status: Awaiting Protected File</span>
+              <span id="recvProgressPercent" class="text-emerald-400 font-bold">0%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-0.5">
+              <div id="recvProgressBar" class="h-full w-0 bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full transition-all duration-150"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Visual Inspection Viewport Column -->
+        <div class="lg:col-span-7 flex flex-col space-y-6">
+          <div class="glass-panel rounded-2xl p-6 shadow-xl border border-slate-800 flex-1 flex flex-col justify-between space-y-6">
+            
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i>
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 font-mono">
+                  Restored Media Viewport
+                </h3>
+              </div>
+              
+              <div id="recvVerifiedBadge" class="hidden items-center gap-1.5 text-xs font-mono text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-800">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                <span>VERIFIER MATCHED • ACCESS GRANTED</span>
+              </div>
+            </div>
+
+            <!-- Canvases Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 items-center">
+              
+              <!-- Encrypted Input Canvas Box -->
+              <div class="space-y-2 flex flex-col items-center">
+                <div class="w-full flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+                  <span class="flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span> Encrypted Source
+                  </span>
+                  <span id="recvInputDim" class="text-[11px] text-slate-500">0 x 0</span>
+                </div>
+                <div class="w-full h-64 sm:h-72 canvas-checkerboard rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center relative">
+                  <canvas id="recvInputCanvas" class="max-w-full max-h-full object-contain"></canvas>
+                  <div id="recvInputOverlay" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 font-mono bg-slate-950/70">
+                    No File Loaded
+                  </div>
+                </div>
+              </div>
+
+              <!-- Restored Result Canvas Box -->
+              <div class="space-y-2 flex flex-col items-center">
+                <div class="w-full flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+                  <span class="flex items-center gap-1">
+                    <span id="recvOutputDot" class="w-2 h-2 rounded-full bg-emerald-500"></span> Restored Image
+                  </span>
+                  <span id="recvOutputDim" class="text-[11px] text-slate-500">0 x 0</span>
+                </div>
+                <div class="w-full h-64 sm:h-72 canvas-checkerboard rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center relative">
+                  <canvas id="recvOutputCanvas" class="max-w-full max-h-full object-contain"></canvas>
+                  <div id="recvOutputOverlay" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 font-mono bg-slate-950/70">
+                    Awaiting Passphrase
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Download Restored Action Bar -->
+            <div class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
+              <div class="text-xs font-mono text-slate-400 flex items-center gap-2">
+                <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+                <span>Restoration Time: <strong id="recvTimeStat" class="text-slate-200">0 ms</strong></span>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button 
+                  id="recvDownloadBtn" 
+                  disabled 
+                  class="px-5 py-2.5 text-xs font-mono font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Download Restored Image</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Terminal Output -->
+          <div class="glass-panel rounded-2xl p-4 shadow-xl border border-slate-800 space-y-2 font-mono">
+            <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-2">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="terminal" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Authentication & Decryption Log</span>
+              </span>
+              <span class="text-[10px] text-slate-500">Zero Server Contact</span>
+            </div>
+            <div id="recvTerminalLog" class="h-24 bg-slate-950/90 rounded-xl border border-slate-900 p-3 text-[11px] text-slate-400 overflow-y-auto space-y-1">
+              <div class="text-emerald-500/80">[SYSTEM] Receive Engine ready. Load protected file to authenticate.</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 4: PROTECTED VAULT -->
+    <!-- ========================================== -->
+    <section id="sectionVault" class="app-section space-y-6">
+      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="folder-lock" class="w-5 h-5 text-cyan-400"></i>
+            <h3 class="text-base font-bold text-slate-100 font-mono">
+              Session Protected Vault
+            </h3>
+          </div>
+          <span class="text-xs font-mono text-slate-400">In-Memory Session Storage (Zero Cloud Persistence)</span>
+        </div>
+        <p class="text-sm text-slate-400">
+          This vault tracks protected images generated in your current browser session. Images remain strictly in your browser RAM.
+        </p>
+
+        <!-- Vault Cards List -->
+        <div id="vaultList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          <div id="vaultEmptyState" class="col-span-full p-8 text-center border border-dashed border-slate-800 rounded-xl space-y-2">
+            <i data-lucide="inbox" class="w-8 h-8 text-slate-600 mx-auto"></i>
+            <p class="text-sm font-mono text-slate-400">No protected files created yet in this session.</p>
+            <p class="text-xs text-slate-500">Go to "Send Privately" to protect your first photo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 5: SECURITY CENTER -->
+    <!-- ========================================== -->
+    <section id="sectionSecurity" class="app-section space-y-6">
+      <div class="glass-panel p-8 rounded-2xl border border-slate-800 space-y-8">
+        
+        <div class="border-b border-slate-800/80 pb-6 space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-800 text-xs font-mono text-cyan-300">
+            <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+            <span>Cryptographic Transparency & Specifications</span>
+          </div>
+          <h3 class="text-2xl font-bold text-slate-100">
+            How Pixie Dust Operates
+          </h3>
+          <p class="text-sm text-slate-400 max-w-3xl">
+            Pixie Dust implements a client-side visual obscuration and access-gating pipeline designed to scramble image pixels before transmission across untrusted networks.
+          </p>
+        </div>
+
+        <!-- 4-Step Technical Architecture Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <div class="p-5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-cyan-400 font-bold">COMPONENT 01</span>
+              <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">PBKDF2-HMAC-SHA256</span>
+            </div>
+            <h4 class="text-base font-semibold text-slate-200">100,000 Rounds Key Derivation</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Standard WebCrypto PBKDF2 iterates 100,000 times over SHA-256 with a unique 16-byte cryptographically secure random salt (`crypto.getRandomValues`) to derive a 256-bit PRNG seed and a 32-bit verifier tag. This increases resistance against dictionary and brute-force attacks.
+            </p>
+          </div>
+
+          <div class="p-5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-cyan-400 font-bold">COMPONENT 02</span>
+              <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">Fisher-Yates Permutation</span>
+            </div>
+            <h4 class="text-base font-semibold text-slate-200">Spatial Pixel Permutation</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Using the deterministic Xoshiro128** PRNG seeded by the master key, pixel coordinates are shuffled across the entire image dimensions. This completely disrupts spatial correlation, object edges, and geometric layout.
+            </p>
+          </div>
+
+          <div class="p-5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-cyan-400 font-bold">COMPONENT 03</span>
+              <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">Keystream XOR Mask</span>
+            </div>
+            <h4 class="text-base font-semibold text-slate-200">RGB Keystream Diffusion</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Each shuffled pixel's Red, Green, and Blue color channels are bitwise XOR-masked with pseudo-random bytes generated from the PRNG stream. This flattens the image histogram and prevents color frequency profiling.
+            </p>
+          </div>
+
+          <div class="p-5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-cyan-400 font-bold">COMPONENT 04</span>
+              <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">LSB Steganography</span>
+            </div>
+            <h4 class="text-base font-semibold text-slate-200">100% Lossless Header Embedding</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Channels 0..159 store the 16-byte salt and 4-byte verifier tag. To eliminate pixel corruption, channels 160..319 back up the original LSBs of channels 0..159. Decryption restores these exact bits, achieving 100% loss-free pixel reconstruction.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Honest Scope & Threat Model Card -->
+        <div class="p-6 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-4">
+          <div class="flex items-center gap-2 text-slate-200 font-mono text-sm font-bold">
+            <i data-lucide="info" class="w-4 h-4 text-cyan-400"></i>
+            <span>HONEST SCOPE & CRYPTOGRAPHIC CLARITY</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Pixie Dust is a <strong>client-side visual scrambling and access-gating tool</strong>. It is designed to disguise photos into static visual noise before leaving the device and prevent unauthorized viewing without the passphrase. It is distinct from authenticated block ciphers (such as AES-GCM) and requires lossless file formats (like PNG) to preserve steganographic header bits.
+          </p>
+        </div>
+
+        <!-- Live Device Benchmark -->
+        <div class="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h4 class="text-sm font-bold text-slate-200 font-mono">Live Hardware Benchmark</h4>
+              <p class="text-xs text-slate-400">Benchmark PBKDF2 (100k rounds) + Fisher-Yates + XOR keystream on your device CPU.</p>
+            </div>
+            <button id="runBenchmarkBtn" class="px-4 py-2 text-xs font-mono font-bold text-slate-950 bg-cyan-400 hover:bg-cyan-300 rounded-xl transition-all flex items-center gap-1.5">
+              <i data-lucide="play" class="w-3.5 h-3.5"></i>
+              <span>Run CPU Benchmark</span>
+            </button>
+          </div>
+
+          <div id="benchmarkResults" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs font-mono">
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-slate-500">Key Derivation (100k):</span>
+              <p id="benchKdfTime" class="text-sm font-bold text-cyan-400 mt-1">0 ms</p>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-slate-500">Permutation & Diffusion:</span>
+              <p id="benchPermTime" class="text-sm font-bold text-emerald-400 mt-1">0 ms</p>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-slate-500">Total Pipeline:</span>
+              <p id="benchTotalTime" class="text-sm font-bold text-slate-200 mt-1">0 ms</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODALS -->
+  <!-- ========================================== -->
+
+  <!-- ACCESS DENIED MODAL -->
+  <div id="modalAccessDenied" class="modal-backdrop">
+    <div class="modal-card modal-danger space-y-6 text-center">
+      <div class="w-16 h-16 mx-auto rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-500 shadow-lg shadow-rose-500/30 animate-bounce">
+        <i data-lucide="shield-x" class="w-8 h-8 stroke-[2.5]"></i>
+      </div>
+
+      <div class="space-y-2">
+        <span class="text-xs font-mono font-bold text-rose-400 uppercase tracking-widest bg-rose-950/80 px-3 py-1 rounded-full border border-rose-800">
+          SECURITY ERROR
+        </span>
+        <h3 class="text-2xl font-extrabold text-slate-100 tracking-tight">
+          ACCESS DENIED
+        </h3>
+        <p class="text-sm text-slate-300">
+          Incorrect passphrase! The cryptographic verifier tag in the image header does not match the key derived from your passphrase.
+        </p>
+      </div>
+
+      <div class="p-3 bg-slate-950/80 rounded-xl border border-rose-950 text-xs font-mono text-slate-400 text-left space-y-1">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Status:</span>
+          <span class="text-rose-400 font-bold">Authentication Mismatch</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Decryption Halted:</span>
+          <span class="text-slate-300">Protected against bit corruption</span>
+        </div>
+      </div>
+
+      <button id="modalAccessDeniedDismiss" class="w-full py-3 px-4 font-mono font-bold text-xs uppercase tracking-wider text-slate-100 bg-rose-600 hover:bg-rose-500 rounded-xl transition-all shadow-lg shadow-rose-600/30">
+        Dismiss & Try Again
+      </button>
+    </div>
+  </div>
+
+  <!-- IMAGE RESTORED SUCCESS MODAL -->
+  <div id="modalSuccess" class="modal-backdrop">
+    <div class="modal-card modal-success space-y-6 text-center">
+      <div class="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/30">
+        <i data-lucide="check-circle-2" class="w-8 h-8 stroke-[2.5]"></i>
+      </div>
+
+      <div class="space-y-2">
+        <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800">
+          AUTHENTICATION VERIFIED
+        </span>
+        <h3 class="text-2xl font-extrabold text-slate-100 tracking-tight">
+          IMAGE RESTORED
+        </h3>
+        <p class="text-sm text-slate-300">
+          The passphrase matches. Coordinate matrix inverted, XOR diffusion reversed, and original LSB bits restored with 100% bit fidelity.
+        </p>
+      </div>
+
+      <div class="p-3 bg-slate-950/80 rounded-xl border border-emerald-950 text-xs font-mono text-slate-400 text-left space-y-1">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Fidelity:</span>
+          <span class="text-emerald-400 font-bold">100% Lossless (0 Bit Drift)</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Restoration Time:</span>
+          <span id="modalSuccessTime" class="text-slate-200">0 ms</span>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button id="modalSuccessDownload" class="flex-1 py-3 px-4 font-mono font-bold text-xs uppercase tracking-wider text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl transition-all shadow-lg shadow-emerald-500/30">
+          Download Image
+        </button>
+        <button id="modalSuccessDismiss" class="py-3 px-4 font-mono font-semibold text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all">
+          View in Viewport
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE LINK DEMO MODAL -->
+  <div id="modalShare" class="modal-backdrop">
+    <div class="modal-card space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="share-2" class="w-4 h-4 text-cyan-400"></i>
+          <h4 class="text-sm font-bold text-slate-100 font-mono">Secure Share Interface</h4>
+        </div>
+        <button id="modalShareClose" class="text-slate-400 hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-3 rounded-xl bg-amber-950/30 border border-amber-800/60 text-xs text-amber-300 font-mono">
+        <strong>[DEMO / PLACEHOLDER]:</strong> In production, protected media is uploaded to your preferred private cloud or sent directly via chat. No server transmission occurs in this local demonstration.
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-mono text-slate-400">Generated Local Payload Link</label>
+        <div class="flex gap-2">
+          <input id="shareLinkInput" readonly value="https://pixiedust.local/#receive?file=scrambled.png" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-300 outline-none" />
+          <button id="shareCopyBtn" class="px-3 py-2 text-xs font-mono bg-cyan-500 text-slate-950 font-bold rounded-xl hover:bg-cyan-400">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 py-6 bg-slate-950/60">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-mono flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>PIXIE DUST • Client-Side WebCrypto In-Memory Engine • Build for Billions Hackathon</p>
+      <p class="text-slate-600">Zero Server Transmission • 100% Private</p>
+    </div>
+  </footer>
+
+  <!-- Application Controller Module -->
+  <script type="module">
+    import { CRYPTO_CONFIG } from './core/crypto/cryptoConfig.js';
+    import { protectImage, restoreImage } from './core/crypto/cryptoEngine.js';
+    import { readImageFile } from './core/file/fileReader.js';
+    import { downloadImageDataAsPng, imageDataToPngDataUrl } from './core/file/fileWriter.js';
+    import { createDemoPayloadImage } from './assets/demo/demoPayload.js';
+    import { evaluatePasswordStrength, generateRandomPassphrase } from './features/password/passwordService.js';
+    import { formatBytes, formatDuration, formatTimestamp } from './utils/formatters.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+
+      // ==========================================
+      // STATE MANAGEMENT
+      // ==========================================
+      const state = {
+        // Send State
+        send: {
+          file: null,
+          imageData: null,
+          width: 0,
+          height: 0,
+          protectedImageData: null,
+          password: '',
+          durationMs: 0
+        },
+        // Receive State
+        recv: {
+          file: null,
+          imageData: null,
+          width: 0,
+          height: 0,
+          restoredImageData: null,
+          password: '',
+          durationMs: 0
+        },
+        // Vault (Session History)
+        vault: []
+      };
+
+      // ==========================================
+      // DOM REFERENCES
+      // ==========================================
+      // Navigation
+      const navTabs = document.querySelectorAll('.nav-tab');
+      const appSections = document.querySelectorAll('.app-section');
+      const quickDemoBtn = document.getElementById('quickDemoBtn');
+      const navBrand = document.getElementById('navBrand');
+
+      // Home Section
+      const homeStartProtectBtn = document.getElementById('homeStartProtectBtn');
+      const homeStartRestoreBtn = document.getElementById('homeStartRestoreBtn');
+
+      // Send Section
+      const sendDropZone = document.getElementById('sendDropZone');
+      const sendFileInput = document.getElementById('sendFileInput');
+      const sendUploadPlaceholder = document.getElementById('sendUploadPlaceholder');
+      const sendFileInfo = document.getElementById('sendFileInfo');
+      const sendFileName = document.getElementById('sendFileName');
+      const sendFileMeta = document.getElementById('sendFileMeta');
+      const sendRemoveFileBtn = document.getElementById('sendRemoveFileBtn');
+
+      const sendPasswordInput = document.getElementById('sendPasswordInput');
+      const sendTogglePassBtn = document.getElementById('sendTogglePassBtn');
+      const sendEyeIcon = document.getElementById('sendEyeIcon');
+      const sendGenPassBtn = document.getElementById('sendGenPassBtn');
+      const sendStrengthBar = document.getElementById('sendStrengthBar');
+      const sendStrengthLabel = document.getElementById('sendStrengthLabel');
+
+      const sendProcessBtn = document.getElementById('sendProcessBtn');
+      const sendProgressStepText = document.getElementById('sendProgressStepText');
+      const sendProgressPercent = document.getElementById('sendProgressPercent');
+      const sendProgressBar = document.getElementById('sendProgressBar');
+
+      const sendInputCanvas = document.getElementById('sendInputCanvas');
+      const sendInputCtx = sendInputCanvas.getContext('2d');
+      const sendOutputCanvas = document.getElementById('sendOutputCanvas');
+      const sendOutputCtx = sendOutputCanvas.getContext('2d');
+      const sendInputOverlay = document.getElementById('sendInputOverlay');
+      const sendOutputOverlay = document.getElementById('sendOutputOverlay');
+      const sendInputDim = document.getElementById('sendInputDim');
+      const sendOutputDim = document.getElementById('sendOutputDim');
+      const sendTimeStat = document.getElementById('sendTimeStat');
+
+      const sendToggleViewBtn = document.getElementById('sendToggleViewBtn');
+      const sendToggleViewText = document.getElementById('sendToggleViewText');
+      const sendInputBox = document.getElementById('sendInputBox');
+      const sendDownloadBtn = document.getElementById('sendDownloadBtn');
+      const sendToReceiveBtn = document.getElementById('sendToReceiveBtn');
+      const sendShareBtn = document.getElementById('sendShareBtn');
+      const sendTerminalLog = document.getElementById('sendTerminalLog');
+
+      // Receive Section
+      const recvDropZone = document.getElementById('recvDropZone');
+      const recvFileInput = document.getElementById('recvFileInput');
+      const recvUploadPlaceholder = document.getElementById('recvUploadPlaceholder');
+      const recvFileInfo = document.getElementById('recvFileInfo');
+      const recvFileName = document.getElementById('recvFileName');
+      const recvFileMeta = document.getElementById('recvFileMeta');
+      const recvRemoveFileBtn = document.getElementById('recvRemoveFileBtn');
+      const recvLoadLastBtn = document.getElementById('recvLoadLastBtn');
+      const recvTestWrongPassBtn = document.getElementById('recvTestWrongPassBtn');
+
+      const recvPasswordInput = document.getElementById('recvPasswordInput');
+      const recvTogglePassBtn = document.getElementById('recvTogglePassBtn');
+      const recvEyeIcon = document.getElementById('recvEyeIcon');
+      const recvProcessBtn = document.getElementById('recvProcessBtn');
+      const recvProgressStepText = document.getElementById('recvProgressStepText');
+      const recvProgressPercent = document.getElementById('recvProgressPercent');
+      const recvProgressBar = document.getElementById('recvProgressBar');
+
+      const recvInputCanvas = document.getElementById('recvInputCanvas');
+      const recvInputCtx = recvInputCanvas.getContext('2d');
+      const recvOutputCanvas = document.getElementById('recvOutputCanvas');
+      const recvOutputCtx = recvOutputCanvas.getContext('2d');
+      const recvInputOverlay = document.getElementById('recvInputOverlay');
+      const recvOutputOverlay = document.getElementById('recvOutputOverlay');
+      const recvInputDim = document.getElementById('recvInputDim');
+      const recvOutputDim = document.getElementById('recvOutputDim');
+      const recvTimeStat = document.getElementById('recvTimeStat');
+      const recvVerifiedBadge = document.getElementById('recvVerifiedBadge');
+      const recvDownloadBtn = document.getElementById('recvDownloadBtn');
+      const recvTerminalLog = document.getElementById('recvTerminalLog');
+
+      // Vault Section
+      const vaultList = document.getElementById('vaultList');
+      const vaultEmptyState = document.getElementById('vaultEmptyState');
+      const vaultBadgeCount = document.getElementById('vaultBadgeCount');
+
+      // Modals
+      const modalAccessDenied = document.getElementById('modalAccessDenied');
+      const modalAccessDeniedDismiss = document.getElementById('modalAccessDeniedDismiss');
+      const modalSuccess = document.getElementById('modalSuccess');
+      const modalSuccessDismiss = document.getElementById('modalSuccessDismiss');
+      const modalSuccessDownload = document.getElementById('modalSuccessDownload');
+      const modalSuccessTime = document.getElementById('modalSuccessTime');
+
+      const modalShare = document.getElementById('modalShare');
+      const modalShareClose = document.getElementById('modalShareClose');
+      const shareCopyBtn = document.getElementById('shareCopyBtn');
+      const shareLinkInput = document.getElementById('shareLinkInput');
+
+      // Security Benchmark
+      const runBenchmarkBtn = document.getElementById('runBenchmarkBtn');
+      const benchmarkResults = document.getElementById('benchmarkResults');
+      const benchKdfTime = document.getElementById('benchKdfTime');
+      const benchPermTime = document.getElementById('benchPermTime');
+      const benchTotalTime = document.getElementById('benchTotalTime');
+
+      // ==========================================
+      // NAVIGATION CONTROLLER
+      // ==========================================
+      function switchSection(targetSectionId) {
+        navTabs.forEach(tab => {
+          if (tab.getAttribute('data-target') === targetSectionId) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+          }
+        });
+
+        appSections.forEach(sec => {
+          if (sec.id === targetSectionId) {
+            sec.classList.add('active');
+          } else {
+            sec.classList.remove('active');
+          }
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      navTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const target = tab.getAttribute('data-target');
+          switchSection(target);
+        });
+      });
+
+      navBrand.addEventListener('click', () => switchSection('sectionHome'));
+      homeStartProtectBtn.addEventListener('click', () => switchSection('sectionSend'));
+      homeStartRestoreBtn.addEventListener('click', () => switchSection('sectionReceive'));
+
+      // ==========================================
+      // LOGGING HELPER
+      // ==========================================
+      function appendLog(terminalEl, message, type = 'info') {
+        const time = formatTimestamp();
+        const entry = document.createElement('div');
+        if (type === 'error') entry.className = 'text-rose-400 font-semibold';
+        else if (type === 'success') entry.className = 'text-emerald-400 font-semibold';
+        else if (type === 'warn') entry.className = 'text-amber-400';
+        else entry.className = 'text-slate-400';
+
+        entry.textContent = `[${time}] ${message}`;
+        terminalEl.appendChild(entry);
+        terminalEl.scrollTop = terminalEl.scrollHeight;
+      }
+
+      // ==========================================
+      // SEND PRIVATELY LOGIC
+      // ==========================================
+      sendDropZone.addEventListener('click', () => sendFileInput.click());
+      sendDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        sendDropZone.classList.add('dropzone-active');
+      });
+      sendDropZone.addEventListener('dragleave', () => sendDropZone.classList.remove('dropzone-active'));
+      sendDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        sendDropZone.classList.remove('dropzone-active');
+        if (e.dataTransfer.files.length > 0) handleSendFile(e.dataTransfer.files[0]);
+      });
+      sendFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleSendFile(e.target.files[0]);
+      });
+
+      async function handleSendFile(file) {
+        try {
+          const res = await readImageFile(file);
+          state.send.file = file;
+          state.send.imageData = res.imageData;
+          state.send.width = res.width;
+          state.send.height = res.height;
+
+          sendFileName.textContent = res.fileName;
+          sendFileMeta.textContent = `${formatBytes(res.fileSize)} • ${res.width}x${res.height} px`;
+          sendUploadPlaceholder.classList.add('hidden');
+          sendFileInfo.classList.remove('hidden');
+
+          sendInputCanvas.width = res.width;
+          sendInputCanvas.height = res.height;
+          sendInputCtx.putImageData(res.imageData, 0, 0);
+          sendInputOverlay.classList.add('hidden');
+          sendInputDim.textContent = `${res.width} x ${res.height}`;
+
+          appendLog(sendTerminalLog, `Loaded target image: ${res.fileName} (${res.width}x${res.height} px).`, 'info');
+          checkSendReady();
+        } catch (err) {
+          appendLog(sendTerminalLog, `Error loading image: ${err.message}`, 'error');
+        }
+      }
+
+      sendRemoveFileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetSendState();
+      });
+
+      function resetSendState() {
+        state.send.file = null;
+        state.send.imageData = null;
+        state.send.protectedImageData = null;
+        sendFileInput.value = '';
+        sendUploadPlaceholder.classList.remove('hidden');
+        sendFileInfo.classList.add('hidden');
+        sendInputCtx.clearRect(0, 0, sendInputCanvas.width, sendInputCanvas.height);
+        sendOutputCtx.clearRect(0, 0, sendOutputCanvas.width, sendOutputCanvas.height);
+        sendInputOverlay.classList.remove('hidden');
+        sendOutputOverlay.classList.remove('hidden');
+        sendInputDim.textContent = '0 x 0';
+        sendOutputDim.textContent = '0 x 0';
+        sendTimeStat.textContent = '0 ms';
+        sendDownloadBtn.disabled = true;
+        sendToReceiveBtn.disabled = true;
+        sendShareBtn.disabled = true;
+        updateSendProgress(0, 'Awaiting Image & Key');
+        checkSendReady();
+      }
+
+      // Password Strength & Generation
+      sendPasswordInput.addEventListener('input', () => {
+        state.send.password = sendPasswordInput.value;
+        const evalRes = evaluatePasswordStrength(state.send.password);
+        sendStrengthBar.style.width = `${evalRes.score}%`;
+        sendStrengthLabel.textContent = evalRes.label;
+        sendStrengthBar.className = `h-full rounded-full transition-all duration-300 ${evalRes.colorClass.split(' ')[0]}`;
+        checkSendReady();
+      });
+
+      sendTogglePassBtn.addEventListener('click', () => {
+        const isPass = sendPasswordInput.type === 'password';
+        sendPasswordInput.type = isPass ? 'text' : 'password';
+        sendEyeIcon.setAttribute('data-lucide', isPass ? 'eye-off' : 'eye');
+        lucide.createIcons();
+      });
+
+      sendGenPassBtn.addEventListener('click', () => {
+        const pass = generateRandomPassphrase();
+        sendPasswordInput.type = 'text';
+        sendPasswordInput.value = pass;
+        sendEyeIcon.setAttribute('data-lucide', 'eye-off');
+        lucide.createIcons();
+        sendPasswordInput.dispatchEvent(new Event('input'));
+        appendLog(sendTerminalLog, `Generated strong passphrase: "${pass}".`, 'info');
+      });
+
+      function checkSendReady() {
+        sendProcessBtn.disabled = !(state.send.imageData && sendPasswordInput.value.trim().length > 0);
+      }
+
+      function updateSendProgress(percent, stepText) {
+        sendProgressPercent.textContent = `${percent}%`;
+        sendProgressBar.style.width = `${percent}%`;
+        sendProgressStepText.textContent = `Status: ${stepText}`;
+      }
+
+      // Protect Action Trigger
+      sendProcessBtn.addEventListener('click', async () => {
+        if (!state.send.imageData) return;
+        const password = sendPasswordInput.value.trim();
+        if (!password) return;
+
+        sendProcessBtn.disabled = true;
+        appendLog(sendTerminalLog, `Starting protection pipeline for ${state.send.width}x${state.send.height} image...`, 'info');
+
+        try {
+          const result = await protectImage({
+            imageData: state.send.imageData,
+            password,
+            onProgress: ({ percent, stepText }) => {
+              updateSendProgress(percent, stepText);
+              if (percent === 15 || percent === 65 || percent === 90) {
+                appendLog(sendTerminalLog, stepText, 'info');
+              }
+            }
+          });
+
+          state.send.protectedImageData = result.outputImageData;
+          state.send.durationMs = result.durationMs;
+
+          // Render output
+          sendOutputCanvas.width = state.send.width;
+          sendOutputCanvas.height = state.send.height;
+          sendOutputCtx.putImageData(result.outputImageData, 0, 0);
+          sendOutputOverlay.classList.add('hidden');
+          sendOutputDim.textContent = `${state.send.width} x ${state.send.height}`;
+          sendTimeStat.textContent = formatDuration(result.durationMs);
+
+          sendDownloadBtn.disabled = false;
+          sendToReceiveBtn.disabled = false;
+          sendShareBtn.disabled = false;
+
+          appendLog(sendTerminalLog, `[SUCCESS] Image scrambled & protected in ${result.durationMs}ms!`, 'success');
+
+          // Record in Vault
+          addToVault({
+            id: Date.now(),
+            name: state.send.file?.name || 'Protected_Image.png',
+            width: state.send.width,
+            height: state.send.height,
+            durationMs: result.durationMs,
+            protectedImageData: result.outputImageData,
+            timestamp: new Date()
+          });
+
+        } catch (err) {
+          appendLog(sendTerminalLog, `Protection Error: ${err.message}`, 'error');
+          updateSendProgress(0, 'Failed');
+        } finally {
+          sendProcessBtn.disabled = false;
+        }
+      });
+
+      // Viewport toggle
+      let sendViewMode = 'dual';
+      sendToggleViewBtn.addEventListener('click', () => {
+        if (sendViewMode === 'dual') {
+          sendViewMode = 'outputOnly';
+          sendInputBox.classList.add('hidden');
+          sendToggleViewText.textContent = 'Show Dual View';
+        } else {
+          sendViewMode = 'dual';
+          sendInputBox.classList.remove('hidden');
+          sendToggleViewText.textContent = 'View Output Only';
+        }
+      });
+
+      // Download Protected Image
+      sendDownloadBtn.addEventListener('click', () => {
+        if (!state.send.protectedImageData) return;
+        downloadImageDataAsPng(state.send.protectedImageData, 'pixie-dust-scrambled.png');
+        appendLog(sendTerminalLog, 'Exported lossless protected image: pixie-dust-scrambled.png', 'success');
+      });
+
+      // Send to Receive shortcut
+      sendToReceiveBtn.addEventListener('click', () => {
+        if (!state.send.protectedImageData) return;
+        loadIntoReceive(state.send.protectedImageData, 'pixie-dust-scrambled.png');
+        switchSection('sectionReceive');
+        appendLog(recvTerminalLog, 'Pre-loaded last scrambled image from Send mode into Receive viewport.', 'info');
+      });
+
+      // Share Link modal trigger
+      sendShareBtn.addEventListener('click', () => {
+        modalShare.classList.add('active');
+      });
+      modalShareClose.addEventListener('click', () => modalShare.classList.remove('active'));
+      shareCopyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(shareLinkInput.value);
+        shareCopyBtn.textContent = 'Copied!';
+        setTimeout(() => { shareCopyBtn.textContent = 'Copy'; }, 2000);
+      });
+
+      // ==========================================
+      // RECEIVE PRIVATELY LOGIC
+      // ==========================================
+      recvDropZone.addEventListener('click', () => recvFileInput.click());
+      recvDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        recvDropZone.classList.add('dropzone-active');
+      });
+      recvDropZone.addEventListener('dragleave', () => recvDropZone.classList.remove('dropzone-active'));
+      recvDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        recvDropZone.classList.remove('dropzone-active');
+        if (e.dataTransfer.files.length > 0) handleRecvFile(e.dataTransfer.files[0]);
+      });
+      recvFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleRecvFile(e.target.files[0]);
+      });
+
+      async function handleRecvFile(file) {
+        try {
+          const res = await readImageFile(file);
+          loadIntoReceive(res.imageData, res.fileName, res.fileSize);
+          appendLog(recvTerminalLog, `Loaded protected file: ${res.fileName} (${res.width}x${res.height} px).`, 'info');
+        } catch (err) {
+          appendLog(recvTerminalLog, `Error loading protected file: ${err.message}`, 'error');
+        }
+      }
+
+      function loadIntoReceive(imageData, filename = 'protected.png', fileSize = null) {
+        state.recv.imageData = imageData;
+        state.recv.width = imageData.width;
+        state.recv.height = imageData.height;
+
+        recvFileName.textContent = filename;
+        recvFileMeta.textContent = `${fileSize ? formatBytes(fileSize) : 'In-Memory'} • ${imageData.width}x${imageData.height} px`;
+        recvUploadPlaceholder.classList.add('hidden');
+        recvFileInfo.classList.remove('hidden');
+
+        recvInputCanvas.width = imageData.width;
+        recvInputCanvas.height = imageData.height;
+        recvInputCtx.putImageData(imageData, 0, 0);
+        recvInputOverlay.classList.add('hidden');
+        recvInputDim.textContent = `${imageData.width} x ${imageData.height}`;
+
+        recvOutputCtx.clearRect(0, 0, recvOutputCanvas.width, recvOutputCanvas.height);
+        recvOutputOverlay.classList.remove('hidden');
+        recvVerifiedBadge.classList.add('hidden');
+        recvVerifiedBadge.classList.remove('flex');
+        recvDownloadBtn.disabled = true;
+
+        checkRecvReady();
+      }
+
+      recvRemoveFileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetRecvState();
+      });
+
+      function resetRecvState() {
+        state.recv.imageData = null;
+        state.recv.restoredImageData = null;
+        recvFileInput.value = '';
+        recvUploadPlaceholder.classList.remove('hidden');
+        recvFileInfo.classList.add('hidden');
+        recvInputCtx.clearRect(0, 0, recvInputCanvas.width, recvInputCanvas.height);
+        recvOutputCtx.clearRect(0, 0, recvOutputCanvas.width, recvOutputCanvas.height);
+        recvInputOverlay.classList.remove('hidden');
+        recvOutputOverlay.classList.remove('hidden');
+        recvVerifiedBadge.classList.add('hidden');
+        recvVerifiedBadge.classList.remove('flex');
+        recvInputDim.textContent = '0 x 0';
+        recvOutputDim.textContent = '0 x 0';
+        recvTimeStat.textContent = '0 ms';
+        recvDownloadBtn.disabled = true;
+        updateRecvProgress(0, 'Awaiting Protected File');
+        checkRecvReady();
+      }
+
+      recvLoadLastBtn.addEventListener('click', () => {
+        if (state.send.protectedImageData) {
+          loadIntoReceive(state.send.protectedImageData, 'pixie-dust-scrambled.png');
+          appendLog(recvTerminalLog, 'Loaded last protected image from current session.', 'info');
+        } else if (state.vault.length > 0) {
+          const item = state.vault[state.vault.length - 1];
+          loadIntoReceive(item.protectedImageData, item.name);
+          appendLog(recvTerminalLog, `Loaded "${item.name}" from Vault.`, 'info');
+        } else {
+          appendLog(recvTerminalLog, 'No protected file found in this session. Protect an image first or browse a file.', 'warn');
+        }
+      });
+
+      // Quick shortcut to test WRONG password for judging flow
+      recvTestWrongPassBtn.addEventListener('click', () => {
+        recvPasswordInput.type = 'text';
+        recvPasswordInput.value = 'wrong-password-999';
+        recvEyeIcon.setAttribute('data-lucide', 'eye-off');
+        lucide.createIcons();
+        checkRecvReady();
+        appendLog(recvTerminalLog, 'Inserted incorrect password "wrong-password-999" for ACCESS DENIED demonstration.', 'warn');
+      });
+
+      recvPasswordInput.addEventListener('input', checkRecvReady);
+
+      recvTogglePassBtn.addEventListener('click', () => {
+        const isPass = recvPasswordInput.type === 'password';
+        recvPasswordInput.type = isPass ? 'text' : 'password';
+        recvEyeIcon.setAttribute('data-lucide', isPass ? 'eye-off' : 'eye');
+        lucide.createIcons();
+      });
+
+      function checkRecvReady() {
+        recvProcessBtn.disabled = !(state.recv.imageData && recvPasswordInput.value.trim().length > 0);
+      }
+
+      function updateRecvProgress(percent, stepText) {
+        recvProgressPercent.textContent = `${percent}%`;
+        recvProgressBar.style.width = `${percent}%`;
+        recvProgressStepText.textContent = `Status: ${stepText}`;
+      }
+
+      // Restore Action Trigger
+      recvProcessBtn.addEventListener('click', async () => {
+        if (!state.recv.imageData) return;
+        const password = recvPasswordInput.value.trim();
+        if (!password) return;
+
+        recvProcessBtn.disabled = true;
+        appendLog(recvTerminalLog, 'Initiating authentication & decryption pipeline...', 'info');
+
+        try {
+          const result = await restoreImage({
+            imageData: state.recv.imageData,
+            password,
+            onProgress: ({ percent, stepText }) => {
+              updateRecvProgress(percent, stepText);
+              if (percent === 15 || percent === 30 || percent === 65 || percent === 85) {
+                appendLog(recvTerminalLog, stepText, 'info');
+              }
+            }
+          });
+
+          // Check if Authentication Denied
+          if (!result.success) {
+            appendLog(recvTerminalLog, `[SECURITY DENIED] ${result.message}`, 'error');
+            updateRecvProgress(0, 'Access Denied');
+            modalAccessDenied.classList.add('active');
+            return;
+          }
+
+          // Successful Restoration
+          state.recv.restoredImageData = result.restoredImageData;
+          state.recv.durationMs = result.durationMs;
+
+          recvOutputCanvas.width = state.recv.width;
+          recvOutputCanvas.height = state.recv.height;
+          recvOutputCtx.putImageData(result.restoredImageData, 0, 0);
+          recvOutputOverlay.classList.add('hidden');
+          recvOutputDim.textContent = `${state.recv.width} x ${state.recv.height}`;
+          recvTimeStat.textContent = formatDuration(result.durationMs);
+
+          recvVerifiedBadge.classList.remove('hidden');
+          recvVerifiedBadge.classList.add('flex');
+          recvDownloadBtn.disabled = false;
+
+          appendLog(recvTerminalLog, `[SUCCESS] Verifier matched! Image 100% loss-free restored in ${result.durationMs}ms.`, 'success');
+
+          // Trigger Success Modal
+          modalSuccessTime.textContent = formatDuration(result.durationMs);
+          modalSuccess.classList.add('active');
+
+        } catch (err) {
+          appendLog(recvTerminalLog, `Decryption Error: ${err.message}`, 'error');
+          updateRecvProgress(0, 'Failed');
+        } finally {
+          recvProcessBtn.disabled = false;
+        }
+      });
+
+      // Download Restored Image
+      recvDownloadBtn.addEventListener('click', () => {
+        if (!state.recv.restoredImageData) return;
+        downloadImageDataAsPng(state.recv.restoredImageData, 'pixie-dust-restored.png');
+        appendLog(recvTerminalLog, 'Exported restored image: pixie-dust-restored.png', 'success');
+      });
+
+      // Modal Dismiss Handlers
+      modalAccessDeniedDismiss.addEventListener('click', () => modalAccessDenied.classList.remove('active'));
+      modalSuccessDismiss.addEventListener('click', () => modalSuccess.classList.remove('active'));
+      modalSuccessDownload.addEventListener('click', () => {
+        modalSuccess.classList.remove('active');
+        recvDownloadBtn.click();
+      });
+
+      // ==========================================
+      // VAULT CONTROLLER
+      // ==========================================
+      function addToVault(item) {
+        state.vault.push(item);
+        vaultBadgeCount.textContent = state.vault.length;
+        renderVault();
+      }
+
+      function renderVault() {
+        if (state.vault.length === 0) {
+          vaultEmptyState.classList.remove('hidden');
+          return;
+        }
+        vaultEmptyState.classList.add('hidden');
+
+        // Clear existing cards
+        const existingCards = vaultList.querySelectorAll('.vault-card');
+        existingCards.forEach(c => c.remove());
+
+        state.vault.slice().reverse().forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'vault-card glass-panel p-4 rounded-xl border border-slate-800 space-y-3';
+          
+          const previewUrl = imageDataToPngDataUrl(item.protectedImageData);
+
+          card.innerHTML = `
+            <div class="h-32 w-full canvas-checkerboard rounded-lg overflow-hidden flex items-center justify-center">
+              <img src="${previewUrl}" class="max-h-full max-w-full object-contain" alt="Scrambled Preview" />
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="font-bold text-slate-200 truncate">${item.name}</span>
+                <span class="text-cyan-400">${item.width}x${item.height}</span>
+              </div>
+              <p class="text-[11px] font-mono text-slate-500">${formatTimestamp(item.timestamp)} • ${item.durationMs}ms computation</p>
+            </div>
+            <button class="vault-restore-btn w-full py-2 px-3 text-xs font-mono font-semibold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+              <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
+              <span>Test Restoration</span>
+            </button>
+          `;
+
+          const restoreBtn = card.querySelector('.vault-restore-btn');
+          restoreBtn.addEventListener('click', () => {
+            loadIntoReceive(item.protectedImageData, item.name);
+            switchSection('sectionReceive');
+            appendLog(recvTerminalLog, `Loaded "${item.name}" from Protected Vault into Receive mode.`, 'info');
+          });
+
+          vaultList.appendChild(card);
+        });
+
+        lucide.createIcons();
+      }
+
+      // ==========================================
+      // QUICK DEMO PAYLOAD LOADER (FOR JUDGES)
+      // ==========================================
+      quickDemoBtn.addEventListener('click', () => {
+        const demo = createDemoPayloadImage();
+        state.send.file = { name: demo.fileName, size: 24500 };
+        state.send.imageData = demo.imageData;
+        state.send.width = demo.width;
+        state.send.height = demo.height;
+
+        sendFileName.textContent = demo.fileName;
+        sendFileMeta.textContent = `Demo Payload • ${demo.width}x${demo.height} px`;
+        sendUploadPlaceholder.classList.add('hidden');
+        sendFileInfo.classList.remove('hidden');
+
+        sendInputCanvas.width = demo.width;
+        sendInputCanvas.height = demo.height;
+        sendInputCtx.putImageData(demo.imageData, 0, 0);
+        sendInputOverlay.classList.add('hidden');
+        sendInputDim.textContent = `${demo.width} x ${demo.height}`;
+
+        sendPasswordInput.value = demo.defaultPassword;
+        sendPasswordInput.dispatchEvent(new Event('input'));
+
+        switchSection('sectionSend');
+        appendLog(sendTerminalLog, `Loaded classified Judge Demo Payload (500x350 px) with test passphrase "${demo.defaultPassword}".`, 'success');
+        appendLog(sendTerminalLog, 'Click "PROTECT IMAGE" to demonstrate scrambling.', 'info');
+      });
+
+      // ==========================================
+      // SECURITY BENCHMARK
+      // ==========================================
+      runBenchmarkBtn.addEventListener('click', async () => {
+        runBenchmarkBtn.disabled = true;
+        runBenchmarkBtn.textContent = 'Running Benchmark...';
+
+        try {
+          const testPayload = createDemoPayloadImage();
+          const t0 = performance.now();
+
+          // Benchmark KDF
+          const kdfStart = performance.now();
+          const salt = new Uint8Array(CRYPTO_CONFIG.SALT_BYTES);
+          crypto.getRandomValues(salt);
+          const { deriveKeyAndVerifier } = await import('./core/crypto/keyDerivation.js');
+          await deriveKeyAndVerifier('benchmark-test-key-2026', salt);
+          const kdfTime = Math.round(performance.now() - kdfStart);
+
+          // Benchmark Full Pipeline
+          const result = await protectImage({
+            imageData: testPayload.imageData,
+            password: 'benchmark-test-key-2026'
+          });
+
+          const totalTime = Math.round(performance.now() - t0);
+          const permTime = totalTime - kdfTime;
+
+          benchKdfTime.textContent = `${kdfTime} ms`;
+          benchPermTime.textContent = `${permTime} ms`;
+          benchTotalTime.textContent = `${totalTime} ms`;
+          benchmarkResults.classList.remove('hidden');
+
+        } catch (err) {
+          console.error('Benchmark failed:', err);
+        } finally {
+          runBenchmarkBtn.disabled = false;
+          runBenchmarkBtn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i><span>Run CPU Benchmark</span>';
+          lucide.createIcons();
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>

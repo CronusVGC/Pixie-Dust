@@ -1,0 +1,40 @@
+/**
+ * PIXIE DUST - Responsive Breakpoints & Viewport Rules
+ */
+
+@media (max-width: 1024px) {
+  .dual-viewport-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-bar-container {
+    flex-direction: column;
+    gap: 0.75rem;
+    height: auto !important;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .nav-tabs-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    justify-content: flex-start;
+    padding-bottom: 0.25rem;
+  }
+
+  .stat-card-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .modal-card {
+    padding: 1.25rem;
+  }
+}

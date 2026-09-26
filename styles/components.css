@@ -1,0 +1,108 @@
+/**
+ * PIXIE DUST - UI Components & Interactive Styles
+ */
+
+/* Modal Overlays */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  width: 90%;
+  max-width: 520px;
+  background: #0b1120;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  transform: scale(0.95);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-backdrop.active .modal-card {
+  transform: scale(1);
+}
+
+/* Access Denied Modal Specific */
+.modal-danger {
+  border: 1px solid var(--border-danger);
+  box-shadow: var(--glow-danger);
+}
+
+/* Success Modal Specific */
+.modal-success {
+  border: 1px solid var(--border-success);
+  box-shadow: var(--glow-emerald);
+}
+
+/* Navigation Tabs */
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nav-tab.active {
+  color: #030712;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+  box-shadow: var(--glow-cyan);
+}
+
+/* Section Transitions */
+.app-section {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.app-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Interactive Dropzone Pulse */
+.dropzone-active {
+  border-color: var(--accent-cyan) !important;
+  background-color: rgba(6, 182, 212, 0.08) !important;
+}
+
+/* Pulse Glow Keyframes */
+@keyframes cyberPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.98); }
+}
+
+.animate-cyber-pulse {
+  animation: cyberPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
