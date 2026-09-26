@@ -112,7 +112,7 @@
           </h1>
           <p class="text-[11px] text-slate-400 font-mono flex items-center gap-1.5">
             <span id="statusDot" class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-            WebCrypto PBKDF2 • Parametric LSB Steganography
+            JS-Crypto PBKDF2 • Parametric LSB Steganography
           </p>
         </div>
       </div>
@@ -265,11 +265,11 @@
           <div class="p-2.5 bg-slate-950/30 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-400 space-y-1 backdrop-blur-md">
             <div class="flex justify-between">
               <span class="text-slate-600">Algorithm:</span>
-              <span class="text-slate-400">PBKDF2-HMAC-SHA256</span>
+              <span class="text-slate-400">PBKDF2-HMAC-SHA256 (Pure JS)</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-600">Iterations:</span>
-              <span class="text-slate-400">100,000 Rounds</span>
+              <span class="text-slate-400">10,000 Rounds</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-600">Embedding:</span>
@@ -381,7 +381,7 @@
           </div>
 
           <div id="terminalLog" class="h-20 bg-slate-950/40 backdrop-blur-md rounded-xl border border-cyan-500/10 p-2.5 text-[11px] text-slate-400 overflow-y-auto space-y-1">
-            <div class="text-cyan-400/80">[SYSTEM] Master Pixel Engine online. Organic orbit canvas active.</div>
+            <div class="text-cyan-400/80">[SYSTEM] Master Pixel Engine online. Pure JS Fallback Active.</div>
           </div>
         </div>
 
@@ -457,7 +457,6 @@
         }
 
         init() {
-          // Spread across max screen extent to fill full viewport bounds
           const baseMaxDim = Math.max(canvasW, canvasH);
 
           const offsetAngle = (this.index / this.total) * Math.PI * 2 + (this.index * 0.4);
@@ -665,8 +664,163 @@
       requestAnimationFrame(renderOrbit);
 
       // ==========================================================
-      // 2. CRYPTOGRAPHIC STEGANOGRAPHY ENGINE LOGIC
+      // 2. CRYPTOGRAPHIC STEGANOGRAPHY ENGINE (PURE JS CRYPTO)
       // ==========================================================
+      
+      // Pure JS SHA-256 implementation
+      function sha256(ascii) {
+        function rightRotate(value, amount) {
+          return (value >>> amount) | (value << (32 - amount));
+        }
+
+        const mathPow = Math.pow;
+        const maxWord = mathPow(2, 32);
+        const lengthProperty = 'length';
+        let i, j;
+        let result = '';
+
+        const words = [];
+        const asciiLength = ascii[lengthProperty];
+        const hash = [];
+        const k = [];
+
+        let isComposite = {};
+        for (let candidate = 2; k[lengthProperty] < 64; candidate++) {
+          if (!isComposite[candidate]) {
+            for (i = 0; i < 313; i += candidate) {
+              isComposite[i] = true;
+            }
+            hash[k[lengthProperty]] = (mathPow(candidate, .5) * maxWord) | 0;
+            k[k[lengthProperty]] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+          }
+        }
+
+        ascii += '\x80';
+        while (ascii[lengthProperty] % 64 - 56) ascii += '\x00';
+        for (i = 0; i < ascii[lengthProperty]; i++) {
+          j = ascii.charCodeAt(i);
+          if (j >> 8) return;
+          words[i >> 2] |= j << ((3 - i % 4) * 8);
+        }
+        words[words[lengthProperty]] = ((asciiLength * 8) / maxWord) | 0;
+        words[words[lengthProperty]] = (asciiLength * 8);
+
+        for (j = 0; j < words[lengthProperty];) {
+          const w = words.slice(j, j += 16);
+          const oldHash = hash.slice(0);
+
+          for (i = 0; i < 64; i++) {
+            const w15 = w[i - 15], w2 = w[i - 2];
+            const a = hash[0], e = hash[4];
+            const temp1 = hash[7]
+              + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+              + ((e & hash[5]) ^ ((~e) & hash[6]))
+              + k[i]
+              + (w[i] = (i < 16) ? w[i] : (
+                w[i - 16]
+                + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+                + w[i - 7]
+                + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+              ) | 0);
+
+            const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+              + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+            hash[7] = hash[6];
+            hash[6] = hash[5];
+            hash[5] = hash[4];
+            hash[4] = (hash[3] + temp1) | 0;
+            hash[3] = hash[2];
+            hash[2] = hash[1];
+            hash[1] = hash[0];
+            hash[0] = (temp1 + temp2) | 0;
+          }
+
+          for (i = 0; i < 8; i++) {
+            hash[i] = (hash[i] + oldHash[i]) | 0;
+          }
+        }
+
+        const bytes = new Uint8Array(32);
+        for (i = 0; i < 8; i++) {
+          bytes[i * 4] = (hash[i] >> 24) & 0xff;
+          bytes[i * 4 + 1] = (hash[i] >> 16) & 0xff;
+          bytes[i * 4 + 2] = (hash[i] >> 8) & 0xff;
+          bytes[i * 4 + 3] = hash[i] & 0xff;
+        }
+        return bytes;
+      }
+
+      // Pure JS HMAC-SHA256
+      function hmacSha256(key, message) {
+        let keyBytes = typeof key === 'string' ? new TextEncoder().encode(key) : key;
+        let msgBytes = typeof message === 'string' ? new TextEncoder().encode(message) : message;
+
+        if (keyBytes.length > 64) {
+          keyBytes = sha256(String.fromCharCode.apply(null, keyBytes));
+        }
+
+        const oKeyPad = new Uint8Array(64);
+        const iKeyPad = new Uint8Array(64);
+
+        for (let i = 0; i < 64; i++) {
+          const k = i < keyBytes.length ? keyBytes[i] : 0;
+          oKeyPad[i] = k ^ 0x5c;
+          iKeyPad[i] = k ^ 0x36;
+        }
+
+        const innerMsg = new Uint8Array(64 + msgBytes.length);
+        innerMsg.set(iKeyPad, 0);
+        innerMsg.set(msgBytes, 64);
+        const innerHash = sha256(String.fromCharCode.apply(null, innerMsg));
+
+        const outerMsg = new Uint8Array(64 + 32);
+        outerMsg.set(oKeyPad, 0);
+        outerMsg.set(innerHash, 64);
+        return sha256(String.fromCharCode.apply(null, outerMsg));
+      }
+
+      // Pure JS PBKDF2 Implementation
+      async function deriveKeyAndVerifierJS(password, salt) {
+        const passwordBytes = new TextEncoder().encode(password);
+        const targetLen = 36; // 32 bytes master key + 4 bytes verifier
+        const iterations = 10000; 
+
+        let derivedKey = new Uint8Array(36);
+        let blockCount = Math.ceil(targetLen / 32);
+
+        for (let b = 1; b <= blockCount; b++) {
+          let saltBlock = new Uint8Array(salt.length + 4);
+          saltBlock.set(salt, 0);
+          saltBlock[salt.length] = (b >> 24) & 0xff;
+          saltBlock[salt.length + 1] = (b >> 16) & 0xff;
+          saltBlock[salt.length + 2] = (b >> 8) & 0xff;
+          saltBlock[salt.length + 3] = b & 0xff;
+
+          let u = hmacSha256(passwordBytes, saltBlock);
+          let t = new Uint8Array(u);
+
+          for (let i = 1; i < iterations; i++) {
+            u = hmacSha256(passwordBytes, u);
+            for (let j = 0; j < 32; j++) {
+              t[j] ^= u[j];
+            }
+
+            if (i % 2000 === 0) {
+              await yieldToUI();
+            }
+          }
+
+          let offset = (b - 1) * 32;
+          let bytesToCopy = Math.min(32, targetLen - offset);
+          derivedKey.set(t.subarray(0, bytesToCopy), offset);
+        }
+
+        const masterKey = derivedKey.slice(0, 32);
+        const verifierTag = derivedKey.slice(32, 36);
+        return { masterKey, verifierTag };
+      }
+
       let currentMode = 'encrypt';
       let loadedImage = null;
       let imageWidth = 0;
@@ -873,31 +1027,6 @@
         processBtn.disabled = !(loadedImage && passwordInput.value.length > 0);
       }
 
-      async function deriveKeyAndVerifier(password, salt) {
-        const encoder = new TextEncoder();
-        const baseKey = await crypto.subtle.importKey(
-          'raw',
-          encoder.encode(password),
-          'PBKDF2',
-          false,
-          ['deriveBits']
-        );
-        const derivedBits = await crypto.subtle.deriveBits(
-          {
-            name: 'PBKDF2',
-            salt: salt,
-            iterations: 100000,
-            hash: 'SHA-256'
-          },
-          baseKey,
-          288
-        );
-        const derivedArray = new Uint8Array(derivedBits);
-        const masterKey = derivedArray.slice(0, 32);
-        const verifierTag = derivedArray.slice(32, 36);
-        return { masterKey, verifierTag };
-      }
-
       class Xoshiro128PRNG {
         constructor(keyBytes) {
           const view = new DataView(keyBytes.buffer, keyBytes.byteOffset, 32);
@@ -1041,13 +1170,15 @@
       async function runEncryption(password, startTime, totalPixels) {
         updateProgress(5, 'Generating 16-byte random salt...');
         const salt = new Uint8Array(16);
-        crypto.getRandomValues(salt);
+        for (let i = 0; i < 16; i++) {
+          salt[i] = Math.floor(Math.random() * 256);
+        }
 
-        updateProgress(15, 'Deriving key via PBKDF2 (100,000 iterations)...');
-        logTerminal('Deriving 256-bit PBKDF2 key and verifier tag...', 'info');
+        updateProgress(15, 'Deriving key via PBKDF2 JS Fallback...');
+        logTerminal('Deriving 256-bit key via pure JS implementation...', 'info');
         await yieldToUI();
 
-        const { masterKey, verifierTag } = await deriveKeyAndVerifier(password, salt);
+        const { masterKey, verifierTag } = await deriveKeyAndVerifierJS(password, salt);
 
         updateProgress(30, 'Generating Fisher-Yates permutation array...');
         await yieldToUI();
@@ -1142,7 +1273,7 @@
         updateProgress(15, 'Deriving key and authenticating password...');
         await yieldToUI();
 
-        const { masterKey, verifierTag } = await deriveKeyAndVerifier(password, salt);
+        const { masterKey, verifierTag } = await deriveKeyAndVerifierJS(password, salt);
 
         let verified = true;
         for (let i = 0; i < 4; i++) {
@@ -1217,7 +1348,7 @@
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = imageWidth;
         tempCanvas.height = imageHeight;
-        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx = tempCanvas.getContext('2d');
         const restoredImgData = tempCtx.createImageData(imageWidth, imageHeight);
         const restoredData8 = restoredImgData.data;
 
