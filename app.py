@@ -35,8 +35,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Load HTML and convert to Base64 Data URI for st.iframe
-html_path = Path(__file__).parent / "Final.html"
+# Load index.html and convert to Base64 Data URI for st.iframe
+html_path = Path(__file__).parent / "index.html"
 if html_path.exists():
     html_bytes = html_path.read_bytes()
     encoded_html = base64.b64encode(html_bytes).decode("utf-8")
@@ -45,4 +45,4 @@ if html_path.exists():
     # Pass data URI directly into st.iframe
     st.iframe(data_uri)
 else:
-    st.error("Final.html file not found in the root directory.")
+    st.error("index.html file not found in the root directory.")
